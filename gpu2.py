@@ -30,7 +30,7 @@ def find_max_parallel(dataset, maximums, row_of_maxes, rows_to_process, num_item
             if dataset[current_row][i] <= 0.0:
                 break
             else:
-                acc += 0.0
+                acc += dataset[current_row][i]
                 actual_data_points += 1
                 i += 1
         ave = acc / actual_data_points
@@ -111,6 +111,8 @@ if __name__ == "__main__":
     #return the data
     maxes = maxes_d.copy_to_host()
     max_indexes = max_indexes_d.copy_to_host()
+
+    print(maxes)
 
     #do a linear search on the values
     max_val = -1
