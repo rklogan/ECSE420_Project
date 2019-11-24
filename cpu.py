@@ -5,41 +5,56 @@ import time
 averages = {}
 
 
-def average(asin, ratings):
-    sum = 0
-    for rating in ratings:
-        sum += rating
+def average(ratings_dict):
+    local_averages = {}
+    for asin in ratings_dict:
+        sum = 0
+        asin_specific_dict = ratings_dict[asin]
+        for rating in asin_specific_dict:
+            sum += rating
+        local_averages[asin] = sum / len(asin_specific_dict)
 
-    averages[asin] = sum / len(ratings)
+    asin = ""
+    highest_avg = 0
+    for i in local_averages:
+        if local_averages[i] > highest_avg:
+            highest_avg = local_averages[i]
+            asin = i
+
+    averages[asin] = highest_avg
 
 
 if __name__ == "__main__":
-    i = 0
     threads = []
-    num_threads = 128
-    threadcounter = 0
+    num_threads = 4
 
     project.load_data()
     start = time.time()
     x = project.ratings_dict
-    for asin in project.ratings_dict:
-        if threadcounter < num_threads:
-            threadcounter += 1
+
+    number_of_asin = len(project.ratings_dict.keys())
+    asin_per_thread = number_of_asin // num_threads
+    subset_dict = {}
+
+    for asin_counter, asin in enumerate(project.ratings_dict):
+        if asin_counter % asin_per_thread == 0:
+            subset_dict = {}
+
+        subset_dict[asin] = project.ratings_dict[asin]
+
+        if asin_counter == number_of_asin or (asin_counter != 0 and (asin_counter + 1) % asin_per_thread == 0):
             thread = threading.Thread(target=average, kwargs={
-                'asin': asin,
-                'ratings': project.ratings_dict[asin]})
+                'ratings_dict': subset_dict})
             threads.append(thread)
             thread.start()
 
-        else:
-            for thread in threads:
-                thread.join()
-                threadcounter = 0
+    for thread in threads:
+        thread.join()
 
     asin = ""
     highest_avg = 0
     for i in averages:
-        if averages[i] >= highest_avg:
+        if averages[i] > highest_avg:
             highest_avg = averages[i]
             asin = i
 
