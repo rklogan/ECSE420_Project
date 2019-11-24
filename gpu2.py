@@ -4,8 +4,6 @@ import project
 import math
 import time
 
-num_threads = 256
-
 @cuda.jit
 def find_max_parallel(dataset, maximums, row_of_maxes, rows_to_process, num_items):
     output_idx = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
@@ -44,7 +42,9 @@ def find_max_parallel(dataset, maximums, row_of_maxes, rows_to_process, num_item
     maximums[output_idx] = max_found
     row_of_maxes[output_idx] = max_row
 
-if __name__ == "__main__":
+def run(nt=1024):
+    num_threads = nt
+
     project.load_data()
 
     num_items = len(project.ratings_dict)
@@ -107,12 +107,11 @@ if __name__ == "__main__":
     start = time.time()
     find_max_parallel[num_blocks,threads_per_block](ratings_array_d, maxes_d, max_indexes_d, rows_per_thread, num_items)
     end = time.time()
+    elapsed = end - start
 
     #return the data
     maxes = maxes_d.copy_to_host()
     max_indexes = max_indexes_d.copy_to_host()
-
-    print(maxes)
 
     #do a linear search on the values
     max_val = -1
@@ -122,8 +121,11 @@ if __name__ == "__main__":
             max_val = maxes[i]
             max_idx = max_indexes[i]
 
-    print('Best Asin: ' + str(asins[max_idx]))
-    print('Rating: ' + str(max_val))
-    print('Time Elapsed: ' + str(end-start))
+    #print('Best Asin: ' + str(asins[max_idx]))
+    #print('Rating: ' + str(max_val))
+    #print('Time Elapsed: ' + str(end-start))
+    print(str(end-start))
 
 
+if __name__ == "__main__":
+    run()
