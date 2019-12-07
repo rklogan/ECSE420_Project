@@ -63,9 +63,20 @@ def load_data():
 
 
     best_phone = find_highest(ratings_dict)
+
+    best_asin = best_phone[0]
+
+    bf_name = " "
+
+
+
+    if best_asin in item_dict:
+        bf_name = item_dict[best_asin].name
+        
+
     end = time.time()
 
-    print("best_phone: ", best_phone[0])
+    print("best_phone: ", bf_name)
     print("rating: ", best_phone[1])
     print("time elapsed: ", round(end - start, 5))
 
@@ -78,6 +89,7 @@ def find_highest(ratings_dict):
     avgs = {}
     highest_avg = 0
     asin = ""
+    name = ""
     
     for i in ratings_dict:
         if i not in avgs:
